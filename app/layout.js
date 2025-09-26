@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "DeepSeek - GreatStack",
-  description: "Full Stack Project",
+  title: "Asksource", // Titre mis à jour
+  description: "Posez des questions sur vos documents.", // Description mise à jour
 };
 
 export default function RootLayout({ children }) {
@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <AppContextProvider>
         <html lang="en">
-          <body className={`${inter.className} antialiased`}>
+          <body className={`${inter.className} antialiased text-gray-800`}> {/* Couleur de texte globale modifiée pour le thème clair */}
             <Toaster toastOptions={
               {
                 success: {style: { background: "black", color: "white"}},

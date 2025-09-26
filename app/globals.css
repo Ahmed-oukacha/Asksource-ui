@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #4d6bfe;
+  --color-primary: #6366F1; /* Couleur principale mise à jour (violet moderne) */
 }
 
 html{
