@@ -12,7 +12,7 @@ export default function Home() {
   const [expand, setExpand] = useState(false)
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const {selectedChat} = useAppContext()
+  const {selectedChat, selectedProject} = useAppContext()
   const containerRef = useRef(null)
 
   useEffect(()=>{
@@ -42,6 +42,14 @@ export default function Home() {
              className="rotate-180" src={assets.menu_icon} alt=""/>
             <Image className="opacity-70" src={assets.chat_icon} alt=""/>
           </div>
+
+          <div className="fixed top-6 bg-gray-100/80 backdrop-blur-sm border border-gray-200/80 py-2 px-4 rounded-full font-semibold text-sm text-gray-700 shadow-sm">
+        <span>Projet: </span>
+        <span className="font-bold text-primary">{selectedProject ? selectedProject.project_id : 'N/A'}</span>
+        <span className="mx-2 text-gray-300">|</span>
+        <span>Chat: </span>
+        <span className="font-bold">{selectedChat?.name}</span>
+    </div>
 
           {messages.length === 0 ? (
             <>

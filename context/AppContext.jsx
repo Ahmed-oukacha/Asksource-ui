@@ -17,6 +17,9 @@ export const AppContextProvider = ({children})=>{
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
 
+    const [projects, setProjects] = useState([]);
+    const [selectedProject, setSelectedProject] = useState(null);
+
     const createNewChat = async ()=>{
         try {
             if(!user) return null;
@@ -63,6 +66,12 @@ export const AppContextProvider = ({children})=>{
         }
     }
 
+    // Mettez cette fonction en commentaire pour le moment, nous l'activerons plus tard
+    const fetchProjects = async () => {
+        // La logique pour appeler le backend sera ajoutée ici
+        console.log("Appel à fetchProjects...");
+    };
+
  useEffect(()=>{
     if(user){
         fetchUsersChats();
@@ -71,12 +80,21 @@ export const AppContextProvider = ({children})=>{
 
     const value = {
         user,
+
+        // États et fonctions pour les chats
         chats,
         setChats,
         selectedChat,
         setSelectedChat,
         fetchUsersChats,
-        createNewChat
+        createNewChat,
+
+        // États et fonctions pour les projets
+        projects,
+        setProjects,
+        selectedProject,
+        setSelectedProject,
+        fetchProjects
     }
     
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>
