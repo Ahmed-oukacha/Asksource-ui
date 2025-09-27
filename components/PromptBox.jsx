@@ -8,7 +8,7 @@ import ProjectModal from './ProjectModal';
 
 const PromptBox = ({ setIsLoading, isLoading }) => {
     const [prompt, setPrompt] = useState('');
-    const { user, chats, setChats, selectedChat, setSelectedChat, selectedProject } = useAppContext();
+    const { user, chats, setChats, selectedChat, setSelectedChat, selectedProject, setSelectedProject } = useAppContext();
     const [searchMode, setSearchMode] = useState('hybrid');
     const [limit, setLimit] = useState(3);
     const [denseLimit, setDenseLimit] = useState(10);
@@ -38,14 +38,12 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                 timestamp: Date.now(),
             };
             
-            // Ajoute le message de l'utilisateur à l'état local immédiatement
             setSelectedChat((prev) => ({
                 ...prev,
                 messages: [...prev.messages, userPrompt],
             }));
             setChats((prevChats) => prevChats.map((chat) => chat._id === selectedChat._id ? { ...chat, messages: [...chat.messages, userPrompt] } : chat));
 
-            // Appel à l'API (qui utilise encore DeepSeek pour le moment)
             const { data } = await axios.post('/api/chat/ai', {
                 chatId: selectedChat._id,
                 prompt,
@@ -65,7 +63,6 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
 
             } else {
                 toast.error(data.message);
-                // Si l'envoi échoue, restaurez le prompt de l'utilisateur
                 setSelectedChat(prev => ({ ...prev, messages: prev.messages.slice(0, -1) }));
                 setPrompt(promptCopy);
             }
@@ -80,7 +77,6 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
 
     return (
         <form onSubmit={sendPrompt} className={`w-full ${selectedChat?.messages.length > 0 ? "max-w-3xl" : "max-w-2xl"} bg-white border border-gray-200 p-4 rounded-3xl mt-4 transition-all`}>
-
             <textarea
                 onKeyDown={handleKeyDown}
                 className='outline-none w-full resize-none overflow-hidden break-words bg-transparent placeholder:text-gray-500'
@@ -90,9 +86,7 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                 onChange={(e) => setPrompt(e.target.value)}
                 value={prompt}
             />
-
             <div className='flex items-end justify-between gap-4 mt-4'>
-
                 {/* Côté gauche : Boutons de mode de recherche */}
                 <div className='flex-shrink-0'>
                     <div className='flex items-center gap-1 bg-gray-100 p-1 rounded-lg h-8'>
@@ -107,7 +101,6 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                         </button>
                     </div>
                 </div>
-
                 {/* Section centrale (extensible) : Sélection de projet et paramètres */}
                 <div className="flex-grow flex items-end justify-center gap-4">
                     {/* Bouton de sélection de projet */}
@@ -117,11 +110,8 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                         className="flex items-center gap-2 h-8 px-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                     >
                         <Image src="/file.svg" alt="Project Icon" width={14} height={14} className="opacity-60"/>
-                        <span className="text-xs font-medium text-gray-700 whitespace-nowrap">
-                            {selectedProject ? selectedProject.project_id : 'Aucun Projet'}
-                        </span>
+                        <span className="text-xs font-medium text-gray-700 whitespace-nowrap">Projects</span>
                     </button>
-
                     {/* Groupe de champs de saisie */}
                     <div className='flex items-center gap-3'>
                         {/* Champ pour Limit */}
@@ -182,7 +172,6 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                         </div>
                     </div>
                 </div>
-
                 {/* Côté droit : Icônes d'action */}
                 <div className='flex-shrink-0'>
                     <div className='flex items-center gap-2'>
@@ -192,16 +181,17 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                             disabled={!prompt || !selectedProject} // Désactiver si aucun projet n'est sélectionné
                             className={`${(prompt && selectedProject) ? "bg-primary" : "bg-gray-300 cursor-not-allowed"} rounded-full p-2.5 transition-colors`}
                         >
-                            <Image className='w-4 h-4 aspect-square' src={(prompt && selectedProject) ? assets.arrow_icon : assets.arrow_icon_dull} alt='Send Icon'/>
+                            <Image className='w-3 h-3 aspect-square' src={(prompt && selectedProject) ? assets.arrow_icon : assets.arrow_icon_dull} alt='Send Icon'/>
                         </button>
                     </div>
                 </div>
             </div>
-
             <ProjectModal 
                 isOpen={isModalOpen} 
                 onClose={() => setIsModalOpen(false)}
-                onConfirm={() => { /* La logique sera ajoutée plus tard */ }}
+                onConfirm={(project) => {
+                    setSelectedProject(project); // Met à jour le projet sélectionné dans le contexte global
+                }}
             />
         </form>
     );

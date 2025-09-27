@@ -68,13 +68,22 @@ export const AppContextProvider = ({children})=>{
 
     // Mettez cette fonction en commentaire pour le moment, nous l'activerons plus tard
     const fetchProjects = async () => {
-        // La logique pour appeler le backend sera ajoutée ici
-        console.log("Appel à fetchProjects...");
+        // Ajout de projets factices pour le test
+        const dummyProjects = [
+            { _id: 'proj1', project_id: 'Projet Alpha' },
+            { _id: 'proj2', project_id: 'Rapport Annuel Q3' },
+            { _id: 'proj3', project_id: 'Données Techniques' },
+        ];
+        setProjects(dummyProjects);
+        if (dummyProjects.length > 0 && !selectedProject) {
+            setSelectedProject(dummyProjects[0]);
+        }
     };
 
  useEffect(()=>{
     if(user){
         fetchUsersChats();
+        fetchProjects();
     }
  }, [user])
 

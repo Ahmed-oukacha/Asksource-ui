@@ -1,23 +1,23 @@
 // Fichier: components/ProjectModal.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { assets } from '@/assets/assets';
 import Image from 'next/image';
+import { useAppContext } from '@/context/AppContext';
 
 const ProjectModal = ({ isOpen, onClose, onConfirm }) => {
     // Si le modal n'est pas ouvert, ne rien rendre
     if (!isOpen) return null;
 
-    // Données factices pour la conception de l'interface utilisateur
-    const dummyProjects = [
-        { _id: '1', project_id: 'Projet Alpha' },
-        { _id: '2', project_id: 'Rapport Annuel Q3' },
-        { _id: '3', project_id: 'Données Techniques' },
-        { _id: '4', project_id: 'Archive Générale' },
-    ];
+    const { projects, selectedProject } = useAppContext();
+    const [tempSelectedProject, setTempSelectedProject] = useState(selectedProject);
 
-    // État temporaire pour la sélection dans le modal
-    const [tempSelectedProject, setTempSelectedProject] = useState(dummyProjects[0]);
+    // Synchroniser la sélection temporaire avec le projet sélectionné global à chaque ouverture du modal
+    useEffect(() => {
+        if (isOpen) {
+            setTempSelectedProject(selectedProject);
+        }
+    }, [isOpen, selectedProject]);
 
     const handleConfirm = () => {
         onConfirm(tempSelectedProject); // Confirmer la sélection
@@ -42,7 +42,7 @@ const ProjectModal = ({ isOpen, onClose, onConfirm }) => {
                 {/* Liste des projets */}
                 <div className="p-6 max-h-[60vh] overflow-y-auto">
                     <div className="space-y-2">
-                        {dummyProjects.map((project) => (
+                        {projects.map((project) => (
                             <div 
                                 key={project._id} 
                                 onClick={() => setTempSelectedProject(project)}
