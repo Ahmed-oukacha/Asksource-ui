@@ -18,7 +18,7 @@ export async function POST(req) {
         // 2. Déterminer l'URL et le payload du backend en fonction du mode de recherche
         switch (searchMode) {
             case 'simple':
-                targetUrl = `/api/v1/nlp/index/answer_search/${projectId}`;
+                targetUrl = `/api/nlp/index/answer_search/${projectId}`;
                 payload = {
                     text: prompt,
                     limit: limit || 2
@@ -26,7 +26,7 @@ export async function POST(req) {
                 break;
             
             case 'hybrid':
-                targetUrl = `/api/v1/nlp/index/answer_hybrid/${projectId}`;
+                targetUrl = `/api/nlp/index/answer_hybrid/${projectId}`;
                 payload = {
                     text: prompt,
                     dense_limit: denseLimit || 10,
@@ -36,7 +36,7 @@ export async function POST(req) {
                 break;
                 
             case 'advanced':
-                targetUrl = `/api/v1/nlp/index/answer_hybrid_cross/${projectId}`;
+                targetUrl = `/api/nlp/index/answer_hybrid_cross/${projectId}`;
                 payload = {
                     text: prompt,
                     dense_limit: denseLimit || 10,
