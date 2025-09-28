@@ -24,13 +24,86 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
     };
 
     // Version finale propre de sendPrompt
+    // const sendPrompt = async (e) => {
+    //     e.preventDefault();
+    //     const promptCopy = prompt;
+    //     try {
+    //         if (!user) return toast.error('Veuillez vous connecter pour envoyer un message');
+    //         if (isLoading) return toast.error('Veuillez attendre la réponse précédente');
+    //         if (!selectedProject) return toast.error('Veuillez sélectionner un projet avant d\'envoyer un message.');
+
+    //         setIsLoading(true);
+    //         setPrompt("");
+
+    //         const userPrompt = {
+    //             role: "user",
+    //             content: promptCopy,
+    //             timestamp: Date.now(),
+    //         };
+    //         setSelectedChat((prev) => ({ ...prev, messages: [...prev.messages, userPrompt] }));
+    //         setChats((prevChats) => prevChats.map((chat) => chat._id === selectedChat._id ? { ...chat, messages: [...chat.messages, userPrompt] } : chat));
+
+    //         // Préparation du corps de la requête pour notre nouveau proxy API
+    //         // const requestBody = {
+    //         //     prompt: promptCopy,
+    //         //     projectId: selectedProject.project_id,
+    //         //     searchMode: searchMode,
+    //         //     limit: limit,
+    //         //     denseLimit: denseLimit,
+    //         //     sparseLimit: sparseLimit,
+    //         // };
+
+    //         // // Appel à notre nouvelle API proxy
+    //         // const { data } = await axios.post('/api/asksource', requestBody);
+    //         let targetUrl = '';
+    //         let payload = {};
+    //         const projectId = selectedProject.project_id;
+
+    //         switch (searchMode) {
+    //             case 'simple':
+    //                 targetUrl = `/api/nlp/index/answer_search/${projectId}`;
+    //                 payload = { text: promptCopy, limit, chatId: selectedChat._id };
+    //                 break;
+    //             case 'hybrid':
+    //                 targetUrl = `/api/nlp/index/answer_hybrid/${projectId}`;
+    //                 payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit, chatId: selectedChat._id };
+    //                 break;
+    //             case 'advanced':
+    //                 targetUrl = `/api/nlp/index/answer_hybrid_cross/${projectId}`;
+    //                 payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit, chatId: selectedChat._id };
+    //                 break;
+    //         }
+
+    //         // استدعاء الرابط المباشر الذي ستقوم Vercel بتحويله
+    //         const { data } = await axios.post(targetUrl, payload);
+
+
+    //         if (data.signal === "rag_answer_success") {
+    //             const assistantMessage = { role: 'assistant', content: data.answer, timestamp: Date.now() };
+    //             setSelectedChat((prev) => ({ ...prev, messages: [...prev.messages, assistantMessage] }));
+    //             setChats((prevChats) => prevChats.map((chat) => chat._id === selectedChat._id ? { ...chat, messages: [...chat.messages, assistantMessage] } : chat));
+    //         } else {
+    //             toast.error(data.signal  || "Une erreur est survenue.");
+    //             setSelectedChat(prev => ({ ...prev, messages: prev.messages.slice(0, -1) }));
+    //             setPrompt(promptCopy);
+    //         }
+    //     } catch (error) {
+    //         toast.error(error.response?.data?.message || error.message || "Une erreur inattendue est survenue.");
+    //         setSelectedChat(prev => ({ ...prev, messages: prev.messages.slice(0, -1) }));
+    //         setPrompt(promptCopy);
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
+
     const sendPrompt = async (e) => {
         e.preventDefault();
         const promptCopy = prompt;
         try {
-            if (!user) return toast.error('Veuillez vous connecter pour envoyer un message');
-            if (isLoading) return toast.error('Veuillez attendre la réponse précédente');
-            if (!selectedProject) return toast.error('Veuillez sélectionner un projet avant d\'envoyer un message.');
+            if (!user || !selectedChat || !selectedProject) {
+                return toast.error('Veuillez vous connecter et sélectionner un projet.');
+            }
+            if (isLoading) return toast.error('Veuillez attendre la réponse précédente.');
 
             setIsLoading(true);
             setPrompt("");
@@ -40,21 +113,15 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                 content: promptCopy,
                 timestamp: Date.now(),
             };
+
+            // 1. Mise à jour optimiste de l'interface utilisateur
             setSelectedChat((prev) => ({ ...prev, messages: [...prev.messages, userPrompt] }));
             setChats((prevChats) => prevChats.map((chat) => chat._id === selectedChat._id ? { ...chat, messages: [...chat.messages, userPrompt] } : chat));
 
-            // Préparation du corps de la requête pour notre nouveau proxy API
-            // const requestBody = {
-            //     prompt: promptCopy,
-            //     projectId: selectedProject.project_id,
-            //     searchMode: searchMode,
-            //     limit: limit,
-            //     denseLimit: denseLimit,
-            //     sparseLimit: sparseLimit,
-            // };
+            // 2. Sauvegarder le message de l'utilisateur en arrière-plan
+            axios.post('/api/save-message', { chatId: selectedChat._id, message: userPrompt });
 
-            // // Appel à notre nouvelle API proxy
-            // const { data } = await axios.post('/api/asksource', requestBody);
+            // 3. Préparer et appeler le backend via Vercel Rewrites
             let targetUrl = '';
             let payload = {};
             const projectId = selectedProject.project_id;
@@ -62,28 +129,32 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
             switch (searchMode) {
                 case 'simple':
                     targetUrl = `/api/nlp/index/answer_search/${projectId}`;
-                    payload = { text: promptCopy, limit, chatId: selectedChat._id };
+                    payload = { text: promptCopy, limit };
                     break;
                 case 'hybrid':
                     targetUrl = `/api/nlp/index/answer_hybrid/${projectId}`;
-                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit, chatId: selectedChat._id };
+                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit };
                     break;
                 case 'advanced':
                     targetUrl = `/api/nlp/index/answer_hybrid_cross/${projectId}`;
-                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit, chatId: selectedChat._id };
+                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit };
                     break;
             }
 
-            // استدعاء الرابط المباشر الذي ستقوم Vercel بتحويله
             const { data } = await axios.post(targetUrl, payload);
-
 
             if (data.signal === "rag_answer_success") {
                 const assistantMessage = { role: 'assistant', content: data.answer, timestamp: Date.now() };
+
+                // 4. Mettre à jour l'interface avec la réponse de l'IA
                 setSelectedChat((prev) => ({ ...prev, messages: [...prev.messages, assistantMessage] }));
                 setChats((prevChats) => prevChats.map((chat) => chat._id === selectedChat._id ? { ...chat, messages: [...chat.messages, assistantMessage] } : chat));
+
+                // 5. Sauvegarder la réponse de l'IA en arrière-plan
+                axios.post('/api/save-message', { chatId: selectedChat._id, message: assistantMessage });
+
             } else {
-                toast.error(data.signal  || "Une erreur est survenue.");
+                toast.error(data.signal || "Une erreur est survenue.");
                 setSelectedChat(prev => ({ ...prev, messages: prev.messages.slice(0, -1) }));
                 setPrompt(promptCopy);
             }
