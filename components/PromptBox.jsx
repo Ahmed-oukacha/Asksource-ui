@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import ProjectModal from './ProjectModal';
 
 const PromptBox = ({ setIsLoading, isLoading }) => {
+    // Tous les hooks doivent être déclarés au début du composant pour éviter les erreurs React internes
     const [prompt, setPrompt] = useState('');
     const { user, chats, setChats, selectedChat, setSelectedChat, selectedProject, setSelectedProject } = useAppContext();
     const [searchMode, setSearchMode] = useState('hybrid');
@@ -22,52 +23,53 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
         }
     };
 
+    // Version finale propre de sendPrompt
     const sendPrompt = async (e) => {
+        e.preventDefault();
         const promptCopy = prompt;
         try {
-            e.preventDefault();
             if (!user) return toast.error('Veuillez vous connecter pour envoyer un message');
             if (isLoading) return toast.error('Veuillez attendre la réponse précédente');
+            if (!selectedProject) return toast.error('Veuillez sélectionner un projet avant d\'envoyer un message.');
 
             setIsLoading(true);
             setPrompt("");
 
             const userPrompt = {
                 role: "user",
-                content: prompt,
+                content: promptCopy,
                 timestamp: Date.now(),
             };
-            
-            setSelectedChat((prev) => ({
-                ...prev,
-                messages: [...prev.messages, userPrompt],
-            }));
+            setSelectedChat((prev) => ({ ...prev, messages: [...prev.messages, userPrompt] }));
             setChats((prevChats) => prevChats.map((chat) => chat._id === selectedChat._id ? { ...chat, messages: [...chat.messages, userPrompt] } : chat));
 
-            const { data } = await axios.post('/api/chat/ai', {
-                chatId: selectedChat._id,
-                prompt,
-            });
+            // Préparation du corps de la requête pour notre nouveau proxy API
+            const requestBody = {
+                prompt: promptCopy,
+                projectId: selectedProject.project_id,
+                searchMode: searchMode,
+                limit: limit,
+                denseLimit: denseLimit,
+                sparseLimit: sparseLimit,
+            };
+
+            // Appel à notre nouvelle API proxy
+            const { data } = await axios.post('/api/asksource', requestBody);
 
             if (data.success) {
-                const assistantMessage = {
-                    ...data.data, // Contient role et content
-                    timestamp: Date.now(),
+                const assistantMessage = { 
+                    ...data.data,
+                    timestamp: Date.now() 
                 };
-                 // Met à jour l'état local avec la réponse de l'assistant
-                setSelectedChat((prev) => ({
-                    ...prev,
-                    messages: [...prev.messages, assistantMessage],
-                }));
+                setSelectedChat((prev) => ({ ...prev, messages: [...prev.messages, assistantMessage] }));
                 setChats((prevChats) => prevChats.map((chat) => chat._id === selectedChat._id ? { ...chat, messages: [...chat.messages, assistantMessage] } : chat));
-
             } else {
-                toast.error(data.message);
+                toast.error(data.message || "Une erreur est survenue.");
                 setSelectedChat(prev => ({ ...prev, messages: prev.messages.slice(0, -1) }));
                 setPrompt(promptCopy);
             }
         } catch (error) {
-            toast.error(error.message);
+            toast.error(error.response?.data?.message || error.message || "Une erreur inattendue est survenue.");
             setSelectedChat(prev => ({ ...prev, messages: prev.messages.slice(0, -1) }));
             setPrompt(promptCopy);
         } finally {
@@ -76,7 +78,7 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
     };
 
     return (
-        <form onSubmit={sendPrompt} className={`w-full ${selectedChat?.messages.length > 0 ? "max-w-3xl" : "max-w-2xl"} bg-white border border-gray-200 p-4 rounded-3xl mt-4 transition-all`}>
+    <form onSubmit={sendPrompt} className={`w-full ${selectedChat?.messages.length > 0 ? "max-w-3xl" : "max-w-2xl"} bg-white border border-gray-200 p-4 rounded-3xl mt-4 transition-all`}>
             <textarea
                 onKeyDown={handleKeyDown}
                 className='outline-none w-full resize-none overflow-hidden break-words bg-transparent placeholder:text-gray-500'
@@ -101,9 +103,8 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                         </button>
                     </div>
                 </div>
-                {/* Section centrale (extensible) : Sélection de projet et paramètres */}
+                {/* Section centrale : Sélection de projet et paramètres */}
                 <div className="flex-grow flex items-end justify-center gap-4">
-                    {/* Bouton de sélection de projet */}
                     <button
                         type="button"
                         onClick={() => setIsModalOpen(true)}
@@ -112,9 +113,7 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                         <Image src="/file.svg" alt="Project Icon" width={14} height={14} className="opacity-60"/>
                         <span className="text-xs font-medium text-gray-700 whitespace-nowrap">Projects</span>
                     </button>
-                    {/* Groupe de champs de saisie */}
                     <div className='flex items-center gap-3'>
-                        {/* Champ pour Limit */}
                         <div className='relative'>
                             <input 
                                 type="number" 
@@ -122,7 +121,7 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                                 value={limit} 
                                 onChange={(e) => setLimit(Math.max(3, Number(e.target.value)))} 
                                 min="3"
-                                placeholder=" " // Le placeholder vide est essentiel pour l'animation
+                                placeholder=" "
                                 className="peer w-15 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none" 
                             />
                             <label 
@@ -132,7 +131,6 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                                 Limit
                             </label>
                         </div>
-                        {/* Champ pour Dense Limit */}
                         <div className='relative'>
                             <input 
                                 type="number" 
@@ -151,7 +149,6 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                                 Dense
                             </label>
                         </div>
-                        {/* Champ pour Sparse Limit */}
                         <div className='relative'>
                             <input 
                                 type="number" 
@@ -175,10 +172,9 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                 {/* Côté droit : Icônes d'action */}
                 <div className='flex-shrink-0'>
                     <div className='flex items-center gap-2'>
-                        {/* <Image className='w-5 h-5 cursor-pointer invert' src={assets.pin_icon} alt='Pin Icon'/> */}
                         <button 
                             type="submit" 
-                            disabled={!prompt || !selectedProject} // Désactiver si aucun projet n'est sélectionné
+                            disabled={!prompt || !selectedProject}
                             className={`${(prompt && selectedProject) ? "bg-primary" : "bg-gray-300 cursor-not-allowed"} rounded-full p-2.5 transition-colors`}
                         >
                             <Image className='w-3 h-3 aspect-square' src={(prompt && selectedProject) ? assets.arrow_icon : assets.arrow_icon_dull} alt='Send Icon'/>
@@ -187,11 +183,10 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
                 </div>
             </div>
             <ProjectModal 
-                isOpen={isModalOpen} 
+                // On passe les props de façon statique pour éviter les erreurs React internes
+                isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                onConfirm={(project) => {
-                    setSelectedProject(project); // Met à jour le projet sélectionné dans le contexte global
-                }}
+                onConfirm={setSelectedProject}
             />
         </form>
     );

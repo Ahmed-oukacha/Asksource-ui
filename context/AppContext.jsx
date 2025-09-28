@@ -66,17 +66,29 @@ export const AppContextProvider = ({children})=>{
         }
     }
 
-    // Mettez cette fonction en commentaire pour le moment, nous l'activerons plus tard
+    // Remplacez l'ancienne fonction fetchProjects par celle-ci
     const fetchProjects = async () => {
-        // Ajout de projets factices pour le test
-        const dummyProjects = [
-            { _id: 'proj1', project_id: 'Projet Alpha' },
-            { _id: 'proj2', project_id: 'Rapport Annuel Q3' },
-            { _id: 'proj3', project_id: 'Données Techniques' },
-        ];
-        setProjects(dummyProjects);
-        if (dummyProjects.length > 0 && !selectedProject) {
-            setSelectedProject(dummyProjects[0]);
+        try {
+            // Construire l'URL complète de l'API backend
+            const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/data/projects`;
+            // Appeler l'API pour obtenir la liste des projets
+            const response = await axios.get(apiUrl);
+
+            if (response.data && response.data.projects) {
+                const fetchedProjects = response.data.projects;
+                setProjects(fetchedProjects);
+                // Si des projets sont récupérés et qu'aucun projet n'est actuellement sélectionné,
+                // sélectionner le premier projet de la liste par défaut.
+                if (fetchedProjects.length > 0 && !selectedProject) {
+                    setSelectedProject(fetchedProjects[0]);
+                }
+            } else {
+                setProjects([]); // Vider la liste si la réponse est inattendue
+            }
+        } catch (error) {
+            toast.error("Impossible de charger les projets depuis le backend.");
+            console.error("Erreur lors de la récupération des projets:", error);
+            setProjects([]); // Vider la liste en cas d'erreur
         }
     };
 

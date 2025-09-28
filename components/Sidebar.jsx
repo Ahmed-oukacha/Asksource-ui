@@ -15,7 +15,7 @@ const Sidebar = ({expand, setExpand}) => {
     <div className={`flex flex-col justify-between bg-white pt-7 transition-all z-50 max-md:absolute max-md:h-screen ${expand ? 'p-4 w-64' : 'md:w-20 w-0 max-md:overflow-hidden'}`}> {/* Couleur de fond du sidebar modifiée pour le thème clair */}
       <div>
         <div className={`flex ${expand ? "flex-row gap-10" : "flex-col items-center gap-8"}`}>
-            <Image className={expand ? "w-36" : "w-10"} src={expand ? assets.logo_text : assets.logo_icon} alt=''/>
+            <Image className={expand ? "w-40" : "w-10"} src={expand ? assets.logo_text : assets.logo_icon} alt=''/>
 
             <div onClick={()=> expand ? setExpand(false) : setExpand(true)}
              className='group relative flex items-center justify-center hover:bg-gray-500/20 transition-all duration-300 h-9 w-9 aspect-square rounded-lg cursor-pointer'>
@@ -49,10 +49,11 @@ const Sidebar = ({expand, setExpand}) => {
             <div onClick={user ? null : openSignIn}
                 className={`flex items-center gap-3 text-gray-700 text-sm p-2 mt-2 cursor-pointer hover:bg-gray-100 rounded-lg`}> {/* Couleur et style du bouton My Profile modifiés */}
                     {
-                            user ? <UserButton/>
-                            : <Image src={assets.profile_icon} alt='' className='w-7'/>
+                        user ? <UserButton/> : <Image src={assets.profile_icon} alt='' className='w-7'/>
                     }
-                    {expand && <span>My Profile</span>}
+                    {expand && (
+                        user && user.fullName ? <span>{user.fullName}</span> : <span>My Profile</span>
+                    )}
             </div>
         </div>
   )

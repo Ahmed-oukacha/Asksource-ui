@@ -63,8 +63,8 @@ export default function Home() {
           (
           <div ref={containerRef}
           className="relative flex flex-col items-center justify-start w-full mt-20 max-h-screen overflow-y-auto"
-          > 
-          <p className="fixed top-8 border border-transparent hover:border-gray-500/50 py-1 px-2 rounded-lg font-semibold mb-6">{selectedChat.name}</p>
+          >
+          {/* Nom du chat supprimé de l'affichage supérieur */}
           {messages.map((msg, index)=>(
             <Message key={index} role={msg.role} content={msg.content}/>
           ))}
