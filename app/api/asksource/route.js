@@ -6,19 +6,20 @@ import Chat from '@/models/Chat'; // Importer le modèle de Chat
 
 export async function POST(req) {
     try {
+        // Authentification de l'utilisateur
         const { userId } = getAuth(req);
-            if (!userId) {
-                return NextResponse.json({ success: false, message: "Utilisateur non authentifié." }, { status: 401 });
-            }
+        if (!userId) {
+            return NextResponse.json({ success: false, message: "Utilisateur non authentifié." }, { status: 401 });
+        }
 
-        // 1. Extraire les données envoyées depuis le frontend
         const body = await req.json();
+        // Assurez-vous que chatId est bien extrait du corps de la requête
         const { prompt, chatId, projectId, searchMode, limit, denseLimit, sparseLimit } = body;
 
         if (!prompt || !projectId || !chatId) {
-            return NextResponse.json({ success: false, message: "Le prompt et l'ID du projet sont requis." }, { status: 400 });
+            return NextResponse.json({ success: false, message: "Le prompt, l'ID du projet et l'ID du chat sont requis." }, { status: 400 });
         }
-        
+
         // **ÉTAPE 1: Sauvegarder le message de l'utilisateur dans la BDD**
         const userPrompt = {
             role: "user",
@@ -27,58 +28,38 @@ export async function POST(req) {
         };
         await connectDB();
         await Chat.findByIdAndUpdate(chatId, { $push: { messages: userPrompt } });
-        
+
+        // Préparation de l'appel au backend (logique existante)
         const backendUrl = process.env.NEXT_PUBLIC_API_URL;
         let targetUrl = '';
         let payload = {};
 
-        // 2. Déterminer l'URL et le payload du backend en fonction du mode de recherche
         switch (searchMode) {
             case 'simple':
                 targetUrl = `/api/nlp/index/answer_search/${projectId}`;
-                payload = {
-                    text: prompt,
-                    limit: limit || 2
-                };
+                payload = { text: prompt, limit: limit || 2 };
                 break;
-            
             case 'hybrid':
                 targetUrl = `/api/nlp/index/answer_hybrid/${projectId}`;
-                payload = {
-                    text: prompt,
-                    dense_limit: denseLimit || 10,
-                    sparse_limit: sparseLimit || 3,
-                    limit: limit || 3
-                };
+                payload = { text: prompt, dense_limit: denseLimit || 10, sparse_limit: sparseLimit || 3, limit: limit || 3 };
                 break;
-                
             case 'advanced':
                 targetUrl = `/api/nlp/index/answer_hybrid_cross/${projectId}`;
-                payload = {
-                    text: prompt,
-                    dense_limit: denseLimit || 10,
-                    sparse_limit: sparseLimit || 5, // Note: sparse_limit est 5 pour le cross
-                    limit: limit || 5
-                };
+                payload = { text: prompt, dense_limit: denseLimit || 10, sparse_limit: sparseLimit || 5, limit: limit || 5 };
                 break;
-
             default:
                 return NextResponse.json({ success: false, message: "Mode de recherche non valide." }, { status: 400 });
         }
 
-        // 3. Appeler le backend Python/FastAPI
         const backendResponse = await fetch(targetUrl, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
 
         if (!backendResponse.ok) {
             const errorData = await backendResponse.json();
-            console.error("Erreur du backend:", errorData);
-            return NextResponse.json({ success: false, message: errorData.signal || "Une erreur est survenue côté backend." }, { status: backendResponse.status });
+            return NextResponse.json({ success: false, message: errorData.signal || "Erreur du backend" }, { status: backendResponse.status });
         }
 
         const data = await backendResponse.json();
@@ -89,12 +70,13 @@ export async function POST(req) {
             content: data.answer,
             timestamp: Date.now()
         };
+
         await Chat.findByIdAndUpdate(chatId, { $push: { messages: assistantResponse } });
 
         return NextResponse.json({ success: true, data: assistantResponse });
 
     } catch (error) {
         console.error("Erreur dans le proxy API:", error);
-        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+        return NextResponse.json({ success: false, message: "Erreur interne du serveur proxy." }, { status: 500 });
     }
 }
