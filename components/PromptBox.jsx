@@ -44,27 +44,46 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
             setChats((prevChats) => prevChats.map((chat) => chat._id === selectedChat._id ? { ...chat, messages: [...chat.messages, userPrompt] } : chat));
 
             // Préparation du corps de la requête pour notre nouveau proxy API
-            const requestBody = {
-                prompt: promptCopy,
-                projectId: selectedProject.project_id,
-                searchMode: searchMode,
-                limit: limit,
-                denseLimit: denseLimit,
-                sparseLimit: sparseLimit,
-            };
+            // const requestBody = {
+            //     prompt: promptCopy,
+            //     projectId: selectedProject.project_id,
+            //     searchMode: searchMode,
+            //     limit: limit,
+            //     denseLimit: denseLimit,
+            //     sparseLimit: sparseLimit,
+            // };
 
-            // Appel à notre nouvelle API proxy
-            const { data } = await axios.post('/api/asksource', requestBody);
+            // // Appel à notre nouvelle API proxy
+            // const { data } = await axios.post('/api/asksource', requestBody);
+            let targetUrl = '';
+            let payload = {};
+            const projectId = selectedProject.project_id;
 
-            if (data.success) {
-                const assistantMessage = { 
-                    ...data.data,
-                    timestamp: Date.now() 
-                };
+            switch (searchMode) {
+                case 'simple':
+                    targetUrl = `/api/nlp/index/answer_search/${projectId}`;
+                    payload = { text: promptCopy, limit };
+                    break;
+                case 'hybrid':
+                    targetUrl = `/api/nlp/index/answer_hybrid/${projectId}`;
+                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit };
+                    break;
+                case 'advanced':
+                    targetUrl = `/api/nlp/index/answer_hybrid_cross/${projectId}`;
+                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit };
+                    break;
+            }
+
+            // استدعاء الرابط المباشر الذي ستقوم Vercel بتحويله
+            const { data } = await axios.post(targetUrl, payload);
+
+
+            if (data.signal === "rag_answer_success") {
+                const assistantMessage = { role: 'assistant', content: data.answer, timestamp: Date.now() };
                 setSelectedChat((prev) => ({ ...prev, messages: [...prev.messages, assistantMessage] }));
                 setChats((prevChats) => prevChats.map((chat) => chat._id === selectedChat._id ? { ...chat, messages: [...chat.messages, assistantMessage] } : chat));
             } else {
-                toast.error(data.message || "Une erreur est survenue.");
+                toast.error(data.signal  || "Une erreur est survenue.");
                 setSelectedChat(prev => ({ ...prev, messages: prev.messages.slice(0, -1) }));
                 setPrompt(promptCopy);
             }
