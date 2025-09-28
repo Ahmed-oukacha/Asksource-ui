@@ -62,15 +62,15 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
             switch (searchMode) {
                 case 'simple':
                     targetUrl = `/api/nlp/index/answer_search/${projectId}`;
-                    payload = { text: promptCopy, limit };
+                    payload = { text: promptCopy, limit, chatId: selectedChat._id };
                     break;
                 case 'hybrid':
                     targetUrl = `/api/nlp/index/answer_hybrid/${projectId}`;
-                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit };
+                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit, chatId: selectedChat._id };
                     break;
                 case 'advanced':
                     targetUrl = `/api/nlp/index/answer_hybrid_cross/${projectId}`;
-                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit };
+                    payload = { text: promptCopy, dense_limit: denseLimit, sparse_limit: sparseLimit, limit, chatId: selectedChat._id };
                     break;
             }
 

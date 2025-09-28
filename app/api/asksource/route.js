@@ -1,16 +1,33 @@
 // Fichier: app/api/asksource/route.js
 import { NextResponse } from 'next/server';
+import { getAuth } from '@clerk/nextjs/server';
+import connectDB from '@/config/db'; // Importer la connexion à la BDD
+import Chat from '@/models/Chat'; // Importer le modèle de Chat
 
 export async function POST(req) {
     try {
+        const { userId } = getAuth(req);
+            if (!userId) {
+                return NextResponse.json({ success: false, message: "Utilisateur non authentifié." }, { status: 401 });
+            }
+
         // 1. Extraire les données envoyées depuis le frontend
         const body = await req.json();
-        const { prompt, projectId, searchMode, limit, denseLimit, sparseLimit } = body;
+        const { prompt, chatId, projectId, searchMode, limit, denseLimit, sparseLimit } = body;
 
-        if (!prompt || !projectId) {
+        if (!prompt || !projectId || !chatId) {
             return NextResponse.json({ success: false, message: "Le prompt et l'ID du projet sont requis." }, { status: 400 });
         }
-
+        
+        // **ÉTAPE 1: Sauvegarder le message de l'utilisateur dans la BDD**
+        const userPrompt = {
+            role: "user",
+            content: prompt,
+            timestamp: Date.now()
+        };
+        await connectDB();
+        await Chat.findByIdAndUpdate(chatId, { $push: { messages: userPrompt } });
+        
         const backendUrl = process.env.NEXT_PUBLIC_API_URL;
         let targetUrl = '';
         let payload = {};
@@ -66,13 +83,15 @@ export async function POST(req) {
 
         const data = await backendResponse.json();
 
-        // 4. Formater la réponse pour le frontend
-        const formattedResponse = {
+        // **ÉTAPE 2: Sauvegarder la réponse de l'IA et la renvoyer**
+        const assistantResponse = {
             role: 'assistant',
             content: data.answer,
+            timestamp: Date.now()
         };
+        await Chat.findByIdAndUpdate(chatId, { $push: { messages: assistantResponse } });
 
-        return NextResponse.json({ success: true, data: formattedResponse });
+        return NextResponse.json({ success: true, data: assistantResponse });
 
     } catch (error) {
         console.error("Erreur dans le proxy API:", error);
