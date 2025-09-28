@@ -70,7 +70,7 @@ export const AppContextProvider = ({children})=>{
     const fetchProjects = async () => {
         try {
             // Construire l'URL complète de l'API backend
-            const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/data/projects`;
+            const apiUrl = `/api/v1/data/projects`;
             // Appeler l'API pour obtenir la liste des projets
             const response = await axios.get(apiUrl);
 
