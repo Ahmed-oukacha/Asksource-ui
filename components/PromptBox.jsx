@@ -15,6 +15,8 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
     const [denseLimit, setDenseLimit] = useState(10);
     const [sparseLimit, setSparseLimit] = useState(3);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -167,113 +169,240 @@ const PromptBox = ({ setIsLoading, isLoading }) => {
         }
     };
 
+    // return (
+    // <form onSubmit={sendPrompt} className={`w-full ${selectedChat?.messages.length > 0 ? "max-w-3xl" : "max-w-2xl"} bg-white border border-gray-200 p-4 rounded-3xl mt-4 transition-all`}>
+    //         <textarea
+    //             onKeyDown={handleKeyDown}
+    //             className='outline-none w-full resize-none overflow-hidden break-words bg-transparent placeholder:text-gray-500'
+    //             rows={2}
+    //             placeholder='Envoyer un message à Asksource'
+    //             required
+    //             onChange={(e) => setPrompt(e.target.value)}
+    //             value={prompt}
+    //         />
+    //         <div className='flex items-end justify-between gap-4 mt-4'>
+    //             {/* Côté gauche : Boutons de mode de recherche */}
+    //             <div className='flex-shrink-0'>
+    //                 <div className='flex items-center gap-1 bg-gray-100 p-1 rounded-lg h-8'>
+    //                     <button type="button" onClick={() => setSearchMode('simple')} className={`px-3 py-1 text-xs rounded-md transition-all duration-300 ${searchMode === 'simple' ? 'bg-white text-gray-800 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-700'}`}>
+    //                         Simple
+    //                     </button>
+    //                     <button type="button" onClick={() => setSearchMode('hybrid')} className={`px-3 py-1 text-xs rounded-md transition-all duration-300 ${searchMode === 'hybrid' ? 'bg-white text-gray-800 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-700'}`}>
+    //                         Hybride
+    //                     </button>
+    //                     <button type="button" onClick={() => setSearchMode('advanced')} className={`px-3 py-1 text-xs rounded-md transition-all duration-300 ${searchMode === 'advanced' ? 'bg-white text-gray-800 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-700'}`}>
+    //                         Avancé
+    //                     </button>
+    //                 </div>
+    //             </div>
+    //             {/* Section centrale : Sélection de projet et paramètres */}
+    //             <div className="flex-grow flex items-end justify-center gap-4">
+    //                 <button
+    //                     type="button"
+    //                     onClick={() => setIsModalOpen(true)}
+    //                     className="flex items-center gap-2 h-8 px-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+    //                 >
+    //                     <Image src="/file.svg" alt="Project Icon" width={14} height={14} className="opacity-60"/>
+    //                     <span className="text-xs font-medium text-gray-700 whitespace-nowrap">Projects</span>
+    //                 </button>
+    //                 <div className='flex items-center gap-3'>
+    //                     <div className='relative'>
+    //                         <input 
+    //                             type="number" 
+    //                             id="limit"
+    //                             value={limit} 
+    //                             onChange={(e) => setLimit(Math.max(3, Number(e.target.value)))} 
+    //                             min="3"
+    //                             placeholder=" "
+    //                             className="peer w-15 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none" 
+    //                         />
+    //                         <label 
+    //                             htmlFor="limit" 
+    //                             className="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 left-1 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
+    //                         >
+    //                             Limit
+    //                         </label>
+    //                     </div>
+    //                     <div className='relative'>
+    //                         <input 
+    //                             type="number" 
+    //                             id="denseLimit"
+    //                             value={denseLimit} 
+    //                             onChange={(e) => setDenseLimit(Math.max(3, Number(e.target.value)))} 
+    //                             min="3"
+    //                             placeholder=" "
+    //                             disabled={searchMode === 'simple'} 
+    //                             className="peer w-15 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed" 
+    //                         />
+    //                         <label 
+    //                             htmlFor="denseLimit" 
+    //                             className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 left-1 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 ${searchMode === 'simple' ? 'text-gray-300' : 'text-gray-400'}`}
+    //                         >
+    //                             Dense
+    //                         </label>
+    //                     </div>
+    //                     <div className='relative'>
+    //                         <input 
+    //                             type="number" 
+    //                             id="sparseLimit"
+    //                             value={sparseLimit} 
+    //                             onChange={(e) => setSparseLimit(Math.max(3, Number(e.target.value)))} 
+    //                             min="3"
+    //                             placeholder=" "
+    //                             disabled={searchMode === 'simple'} 
+    //                             className="peer w-15 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed" 
+    //                         />
+    //                         <label 
+    //                             htmlFor="sparseLimit" 
+    //                             className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 left-1 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 ${searchMode === 'simple' ? 'text-gray-300' : 'text-gray-400'}`}
+    //                         >
+    //                             Sparse
+    //                         </label>
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //             {/* Côté droit : Icônes d'action */}
+    //             <div className='flex-shrink-0'>
+    //                 <div className='flex items-center gap-2'>
+    //                     <button 
+    //                         type="submit" 
+    //                         disabled={!prompt || !selectedProject}
+    //                         className={`${(prompt && selectedProject) ? "bg-primary" : "bg-gray-300 cursor-not-allowed"} rounded-full p-2.5 transition-colors`}
+    //                     >
+    //                         <Image className='w-3 h-3 aspect-square' src={(prompt && selectedProject) ? assets.arrow_icon : assets.arrow_icon_dull} alt='Send Icon'/>
+    //                     </button>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //         <ProjectModal 
+    //             // On passe les props de façon statique pour éviter les erreurs React internes
+    //             isOpen={isModalOpen}
+    //             onClose={() => setIsModalOpen(false)}
+    //             onConfirm={setSelectedProject}
+    //         />
+    //     </form>
+    // );
     return (
-    <form onSubmit={sendPrompt} className={`w-full ${selectedChat?.messages.length > 0 ? "max-w-3xl" : "max-w-2xl"} bg-white border border-gray-200 p-4 rounded-3xl mt-4 transition-all`}>
-            <textarea
-                onKeyDown={handleKeyDown}
-                className='outline-none w-full resize-none overflow-hidden break-words bg-transparent placeholder:text-gray-500'
-                rows={2}
-                placeholder='Envoyer un message à Asksource'
-                required
-                onChange={(e) => setPrompt(e.target.value)}
-                value={prompt}
-            />
-            <div className='flex items-end justify-between gap-4 mt-4'>
-                {/* Côté gauche : Boutons de mode de recherche */}
-                <div className='flex-shrink-0'>
-                    <div className='flex items-center gap-1 bg-gray-100 p-1 rounded-lg h-8'>
-                        <button type="button" onClick={() => setSearchMode('simple')} className={`px-3 py-1 text-xs rounded-md transition-all duration-300 ${searchMode === 'simple' ? 'bg-white text-gray-800 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-700'}`}>
-                            Simple
-                        </button>
-                        <button type="button" onClick={() => setSearchMode('hybrid')} className={`px-3 py-1 text-xs rounded-md transition-all duration-300 ${searchMode === 'hybrid' ? 'bg-white text-gray-800 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-700'}`}>
-                            Hybride
-                        </button>
-                        <button type="button" onClick={() => setSearchMode('advanced')} className={`px-3 py-1 text-xs rounded-md transition-all duration-300 ${searchMode === 'advanced' ? 'bg-white text-gray-800 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-700'}`}>
-                            Avancé
-                        </button>
-                    </div>
-                </div>
-                {/* Section centrale : Sélection de projet et paramètres */}
-                <div className="flex-grow flex items-end justify-center gap-4">
-                    <button
-                        type="button"
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-2 h-8 px-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+        <form onSubmit={sendPrompt} className={`w-full ${selectedChat?.messages.length > 0 ? "max-w-3xl" : "max-w-2xl"} bg-white border border-gray-200 p-4 rounded-3xl mt-4 transition-all`}>
+            <div className="relative flex items-center">
+                <textarea
+                    onKeyDown={handleKeyDown}
+                    className='outline-none w-full resize-none overflow-hidden break-words bg-transparent placeholder:text-gray-500 pr-16'
+                    rows={2}
+                    placeholder='Envoyer un message à Asksource'
+                    required
+                    onChange={(e) => setPrompt(e.target.value)}
+                    value={prompt}
+                />
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                    <button 
+                        type="button" 
+                        onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                        className="md:hidden rounded-lg p-2 transition-colors flex items-center justify-center text-gray-500 hover:bg-gray-100"
                     >
-                        <Image src="/file.svg" alt="Project Icon" width={14} height={14} className="opacity-60"/>
-                        <span className="text-xs font-medium text-gray-700 whitespace-nowrap">Projects</span>
+                        <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.438.995s.145.755.438.995l1.003.827c.424.35.534.954.26 1.431l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.075.124a6.57 6.57 0 0 1-.22.127c-.332.183-.582.495-.645.87l-.213 1.281c-.09.543-.56.941-1.11.941h-2.593c-.55 0-1.02-.398-1.11-.941l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.075-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.437-.995s-.145-.755-.437-.995l-1.004-.827a1.125 1.125 0 0 1-.26-1.431l1.296-2.247a1.125 1.125 0 0 1 1.37-.49l1.217.456c.355.133.75.072 1.075-.124.072-.044.146-.087.22-.127.332-.183.582-.495.645-.87l.213-1.281Z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
                     </button>
-                    <div className='flex items-center gap-3'>
-                        <div className='relative'>
-                            <input 
-                                type="number" 
-                                id="limit"
-                                value={limit} 
-                                onChange={(e) => setLimit(Math.max(3, Number(e.target.value)))} 
-                                min="3"
-                                placeholder=" "
-                                className="peer w-15 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none" 
-                            />
-                            <label 
-                                htmlFor="limit" 
-                                className="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 left-1 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
-                            >
-                                Limit
-                            </label>
-                        </div>
-                        <div className='relative'>
-                            <input 
-                                type="number" 
-                                id="denseLimit"
-                                value={denseLimit} 
-                                onChange={(e) => setDenseLimit(Math.max(3, Number(e.target.value)))} 
-                                min="3"
-                                placeholder=" "
-                                disabled={searchMode === 'simple'} 
-                                className="peer w-15 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed" 
-                            />
-                            <label 
-                                htmlFor="denseLimit" 
-                                className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 left-1 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 ${searchMode === 'simple' ? 'text-gray-300' : 'text-gray-400'}`}
-                            >
-                                Dense
-                            </label>
-                        </div>
-                        <div className='relative'>
-                            <input 
-                                type="number" 
-                                id="sparseLimit"
-                                value={sparseLimit} 
-                                onChange={(e) => setSparseLimit(Math.max(3, Number(e.target.value)))} 
-                                min="3"
-                                placeholder=" "
-                                disabled={searchMode === 'simple'} 
-                                className="peer w-15 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed" 
-                            />
-                            <label 
-                                htmlFor="sparseLimit" 
-                                className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 left-1 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 ${searchMode === 'simple' ? 'text-gray-300' : 'text-gray-400'}`}
-                            >
-                                Sparse
-                            </label>
-                        </div>
-                    </div>
+                    <button 
+                        type="submit" 
+                        disabled={!prompt || !selectedProject}
+                        className={`${(prompt && selectedProject) ? "bg-primary" : "bg-gray-300 cursor-not-allowed"} rounded-full p-2.5 transition-colors`}
+                    >
+                        <Image className='w-3 h-3 aspect-square' src={(prompt && selectedProject) ? assets.arrow_icon : assets.arrow_icon_dull} alt='Send Icon'/>
+                    </button>
                 </div>
-                {/* Côté droit : Icônes d'action */}
-                <div className='flex-shrink-0'>
-                    <div className='flex items-center gap-2'>
-                        <button 
-                            type="submit" 
-                            disabled={!prompt || !selectedProject}
-                            className={`${(prompt && selectedProject) ? "bg-primary" : "bg-gray-300 cursor-not-allowed"} rounded-full p-2.5 transition-colors`}
-                        >
-                            <Image className='w-3 h-3 aspect-square' src={(prompt && selectedProject) ? assets.arrow_icon : assets.arrow_icon_dull} alt='Send Icon'/>
-                        </button>
+            </div>
+
+            <div className={`${isSettingsOpen ? 'block' : 'hidden'} md:block transition-all duration-300`}>
+                <div className="border-t border-gray-200 mt-4 pt-4">
+                    <div className='flex flex-col md:flex-row md:items-end md:justify-between gap-4'>
+                        <div className='flex-shrink-0'>
+                            <div className='flex items-center gap-1 bg-gray-100 p-1 rounded-lg h-8'>
+                                <button type="button" onClick={() => setSearchMode('simple')} className={`px-3 py-1 text-xs rounded-md transition-all duration-300 ${searchMode === 'simple' ? 'bg-white text-gray-800 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-700'}`}>
+                                    Simple
+                                </button>
+                                <button type="button" onClick={() => setSearchMode('hybrid')} className={`px-3 py-1 text-xs rounded-md transition-all duration-300 ${searchMode === 'hybrid' ? 'bg-white text-gray-800 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-700'}`}>
+                                    Hybride
+                                </button>
+                                <button type="button" onClick={() => setSearchMode('advanced')} className={`px-3 py-1 text-xs rounded-md transition-all duration-300 ${searchMode === 'advanced' ? 'bg-white text-gray-800 shadow-sm' : 'bg-transparent text-gray-500 hover:text-gray-700'}`}>
+                                    Avancé
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <button
+                                type="button"
+                                onClick={() => setIsModalOpen(true)}
+                                className="flex items-center gap-2 h-8 px-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                            >
+                                <Image src="/file.svg" alt="Project Icon" width={14} height={14} className="opacity-60"/>
+                                <span className="text-xs font-medium text-gray-700 whitespace-nowrap">
+                                    Projects
+                                </span>
+                            </button>
+
+                            <div className='relative'>
+                                <input 
+                                    type="number" 
+                                    id="limit"
+                                    value={limit} 
+                                    onChange={(e) => setLimit(Math.max(3, Number(e.target.value)))} 
+                                    min="3"
+                                    placeholder=" "
+                                    className="peer w-16 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none" 
+                                />
+                                <label 
+                                    htmlFor="limit" 
+                                    className="absolute text-sm text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 left-1 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4"
+                                >
+                                    Limit
+                                </label>
+                            </div>
+                            <div className='relative'>
+                                <input 
+                                    type="number" 
+                                    id="denseLimit"
+                                    value={denseLimit} 
+                                    onChange={(e) => setDenseLimit(Math.max(3, Number(e.target.value)))} 
+                                    min="3"
+                                    placeholder=" "
+                                    disabled={searchMode === 'simple'} 
+                                    className="peer w-16 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed" 
+                                />
+                                <label 
+                                    htmlFor="denseLimit" 
+                                    className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 left-1 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 ${searchMode === 'simple' ? 'text-gray-300' : 'text-gray-400'}`}
+                                >
+                                    Dense
+                                </label>
+                            </div>
+                            <div className='relative'>
+                                <input 
+                                    type="number" 
+                                    id="sparseLimit"
+                                    value={sparseLimit} 
+                                    onChange={(e) => setSparseLimit(Math.max(3, Number(e.target.value)))} 
+                                    min="3"
+                                    placeholder=" "
+                                    disabled={searchMode === 'simple'} 
+                                    className="peer w-16 h-8 text-center text-sm p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed" 
+                                />
+                                <label 
+                                    htmlFor="sparseLimit" 
+                                    className={`absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 left-1 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 ${searchMode === 'simple' ? 'text-gray-300' : 'text-gray-400'}`}
+                                >
+                                    Sparse
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
             <ProjectModal 
-                // On passe les props de façon statique pour éviter les erreurs React internes
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onConfirm={setSelectedProject}
