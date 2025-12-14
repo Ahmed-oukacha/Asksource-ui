@@ -17,4 +17,5 @@
       "destination": "http://34.14.43.129/api/v1/nlp/index/answer_hybrid_cross/:projectId"
     }
   ]
+  
 }
