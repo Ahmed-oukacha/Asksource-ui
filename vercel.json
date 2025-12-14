@@ -2,19 +2,19 @@
   "rewrites": [
     {
       "source": "/api/v1/data/projects",
-      "destination": "http://194.163.186.182/api/v1/data/projects"
+      "destination": "http://34.14.43.129/api/v1/data/projects"
     },
     {
       "source": "/api/nlp/index/answer_search/:projectId",
-      "destination": "http://194.163.186.182/api/v1/nlp/index/answer_search/:projectId"
+      "destination": "http://34.14.43.129/api/v1/nlp/index/answer_search/:projectId"
     },
     {
       "source": "/api/nlp/index/answer_hybrid/:projectId",
-      "destination": "http://194.163.186.182/api/v1/nlp/index/answer_hybrid/:projectId"
+      "destination": "http://34.14.43.129/api/v1/nlp/index/answer_hybrid/:projectId"
     },
     {
       "source": "/api/nlp/index/answer_hybrid_cross/:projectId",
-      "destination": "http://194.163.186.182/api/v1/nlp/index/answer_hybrid_cross/:projectId"
+      "destination": "http://34.14.43.129/api/v1/nlp/index/answer_hybrid_cross/:projectId"
     }
   ]
 }
